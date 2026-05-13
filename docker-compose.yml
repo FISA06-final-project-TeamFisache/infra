@@ -16,17 +16,6 @@ services:
     networks:
       - wooriport-network
 
-  redis:
-    image: redis:7-alpine
-    container_name: wooriport-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data              # Redis 데이터 영구 저장
-    restart: unless-stopped
-    networks:
-      - wooriport-network
-
   # 3. Kafka
   kafka:
     image: apache/kafka:3.7.2
