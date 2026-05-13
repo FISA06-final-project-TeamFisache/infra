@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: pgvector/pgvector:pg16     # pgvector 포함 이미지 (RAG용)
+    image: postgres:16     # 일반 postgres 디비
     container_name: wooriport-db
     ports:
       - "5432:5432"
