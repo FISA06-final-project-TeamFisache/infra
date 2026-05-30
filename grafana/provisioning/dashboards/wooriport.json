@@ -1,0 +1,89 @@
+{
+  "title": "Wooriport API 모니터링",
+  "uid": "wooriport-api",
+  "timezone": "Asia/Seoul",
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "총 요청 수 (RPS)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\"}[1m]))",
+          "legendFormat": "RPS"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "에러율 (%)",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\",status=~\"5..\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\"}[1m])) * 100",
+          "legendFormat": "5xx"
+        },
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\",status=~\"4..\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\"}[1m])) * 100",
+          "legendFormat": "4xx"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "평균 응답 시간 (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_sum{application=\"wooriport\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\"}[1m])) * 1000",
+          "legendFormat": "avg latency"
+        }
+      ]
+    }
+    ,
+    {
+      "id": 4,
+      "title": "URI별 평균 응답 시간 (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 10 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "color": { "mode": "palette-classic" }
+        }
+      },
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_sum{application=\"wooriport\",uri!~\"/actuator.*\"}[1m]) / rate(http_server_requests_seconds_count{application=\"wooriport\",uri!~\"/actuator.*\"}[1m]) * 1000",
+          "legendFormat": "{{uri}} [{{method}}]"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38
+}
