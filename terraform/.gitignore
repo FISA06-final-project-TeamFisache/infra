@@ -1,0 +1,13 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform.lock.hcl
+crash.log
+*.pem
+
+# 로컬 도구 환경 (가상환경 / 포터블 바이너리)
+.venv/
+tools/
+terraform.exe

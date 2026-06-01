@@ -27,3 +27,9 @@ docker compose up -d --force-recreate kafka
 | Postgres  | 5432        |
 | Kafka     | 9092 (외부) |
 | Kafka UI  | 8081        |
+
+---
+
+## AWS 인프라 (Terraform)
+
+AWS VPC/EC2 프로비저닝은 [terraform/](terraform/) 폴더 참고. (로컬 Grafana/ELK는 위 Docker 구성 유지)

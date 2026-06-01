@@ -1,0 +1,12 @@
+# 이 파일을 terraform.tfvars 로 복사한 뒤 값을 채우세요.
+# (terraform.tfvars 는 .gitignore 에 포함되어 커밋되지 않습니다)
+
+project = "myapp"
+
+# SSM으로 접속하므로 키페어는 선택사항. 백업용으로 쓰려면 기존 키페어 이름 입력.
+# key_name = "my-keypair"
+
+# --- Spring Batch (분리 시 켜기) ---
+# enable_batch     = true
+# batch_start_cron = "cron(50 1 * * ? *)"  # 매일 01:50 KST 시작
+# batch_stop_cron  = "cron(0 3 * * ? *)"   # 매일 03:00 KST 중지
