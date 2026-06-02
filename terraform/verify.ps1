@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 <#
 .SYNOPSIS
   Terraform으로 올린 AWS 인프라 연결 검증 (컨테이너 없이 가능한 범위).
@@ -82,8 +82,11 @@ if ($tf.instance_private_ips) {
   foreach ($p in $tf.instance_private_ips.value.PSObject.Properties) { $privIps[$p.Name] = $p.Value }
 }
 $natIp = if ($tf.nat_public_ip) { $tf.nat_public_ip.value } else { $null }
+$rdsEndpoint = if ($tf.rds_endpoint) { $tf.rds_endpoint.value } else { $null }
+$rdsPort     = if ($tf.rds_port) { $tf.rds_port.value } else { 5432 }
 
 Ok "인스턴스 $($instances.Count)대 / NAT IP: $natIp"
+if ($rdsEndpoint) { Ok "RDS: $rdsEndpoint`:$rdsPort" } else { Info "RDS output 없음 (apply 전이거나 RDS 미생성)" }
 
 #############################################
 # 2. SSM Online 확인 (핵심) — 최대 WaitMinutes 폴링
@@ -149,6 +152,17 @@ if ($Deep) {
       if ($out -eq 'REACHABLE') { Ok "app → $($kv.Key) ($target) 도달" }
       else { Fail "app → $($kv.Key) ($target) 도달 실패 (internal SG 확인)" }
     }
+  }
+
+  Section "RDS 연결 확인 (app → Postgres 5432)"
+  if (-not $rdsEndpoint) { Info "RDS endpoint 없음 — 확인 생략" }
+  elseif (-not $instances['app']) { Info "app 인스턴스 없음 — RDS 확인 생략" }
+  else {
+    $cmd = "(timeout 5 bash -c '</dev/tcp/$rdsEndpoint/$rdsPort') 2>/dev/null && echo OPEN || echo CLOSED"
+    $inv = Invoke-Ssm $instances['app'] $cmd
+    $out = if ($inv) { $inv.StandardOutputContent.Trim() } else { 'NO_RESULT' }
+    if ($out -eq 'OPEN') { Ok "app → RDS ($rdsEndpoint`:$rdsPort) 연결 가능 (rds SG/서브넷 정상)" }
+    else { Fail "app → RDS ($rdsEndpoint`:$rdsPort) 연결 실패 — rds SG 인그레스 / DB 상태 확인" }
   }
 }
 

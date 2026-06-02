@@ -6,6 +6,8 @@
 .terraform.lock.hcl
 crash.log
 *.pem
+tfplan
+*.tfplan
 
 # 로컬 도구 환경 (가상환경 / 포터블 바이너리)
 .venv/
