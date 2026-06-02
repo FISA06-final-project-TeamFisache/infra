@@ -1,7 +1,9 @@
 #############################################
 # Security Groups
 #  internal : VPC 내부 통신 전체 허용
-#             (EC2 ↔ Kafka ↔ AI ↔ monitoring scrape ↔ 추후 RDS)
+#             (EC2 ↔ Kafka ↔ AI ↔ monitoring scrape)
+#             RDS 접속은 EC2 가 internal SG 멤버이므로 rds SG(5432) 인그레스로 허용됨
+#             (rds SG 정의는 rds.tf)
 #  접속(SSH)은 SSM Session Manager로 → 인터넷 인바운드 규칙 불필요.
 #  아웃바운드는 전체 허용 → NAT/SSM/패키지설치/외부 API 동작.
 #############################################

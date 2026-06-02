@@ -33,3 +33,34 @@ output "batch_instance_id" {
   description = "배치 EC2 ID (enable_batch=true 일 때만)"
   value       = var.enable_batch ? aws_instance.batch[0].id : null
 }
+
+#############################################
+# RDS (enable_rds=true 일 때만 값이 채워짐)
+#############################################
+output "rds_endpoint" {
+  description = "RDS 접속 호스트 (private DNS, VPC 내부에서만 접근)"
+  value       = var.enable_rds ? aws_db_instance.main[0].address : null
+}
+
+output "rds_port" {
+  value = var.enable_rds ? aws_db_instance.main[0].port : null
+}
+
+output "rds_database" {
+  value = var.enable_rds ? aws_db_instance.main[0].db_name : null
+}
+
+output "rds_username" {
+  value = var.enable_rds ? aws_db_instance.main[0].username : null
+}
+
+output "rds_password" {
+  description = "마스터 비밀번호 (확인: terraform output -raw rds_password)"
+  value       = var.enable_rds ? random_password.rds[0].result : null
+  sensitive   = true
+}
+
+output "rds_jdbc_url" {
+  description = "Spring 등에서 쓸 JDBC URL (비밀번호는 별도)"
+  value       = var.enable_rds ? "jdbc:postgresql://${aws_db_instance.main[0].address}:${aws_db_instance.main[0].port}/${aws_db_instance.main[0].db_name}" : null
+}

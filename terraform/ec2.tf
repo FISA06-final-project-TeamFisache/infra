@@ -23,11 +23,11 @@ resource "aws_instance" "this" {
   instance_type          = each.value.instance_type
   subnet_id              = aws_subnet.private[each.value.subnet_index].id
   iam_instance_profile   = aws_iam_instance_profile.ssm.name
-  vpc_security_group_ids  = [aws_security_group.internal.id]
+  vpc_security_group_ids = [aws_security_group.internal.id]
   key_name               = var.key_name != "" ? var.key_name : null
 
   root_block_device {
-    volume_size = 20    # GB
+    volume_size = 20 # GB
     volume_type = "gp3"
   }
 
