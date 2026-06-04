@@ -1,0 +1,18 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: slack-fintech
+    receivers:
+      - uid: slack-fintech-receiver
+        type: slack
+        settings:
+          # TODO: Slack Incoming Webhook URL 로 교체 (https://api.slack.com/messaging/webhooks)
+          url: <SLACK_WEBHOOK_URL>
+          title: '🚨 [이체 실패] {{ .CommonLabels.alertname }}'
+          text: |
+            *이체(confirm-all) 실패 감지*
+            - 최근 5분 실패 건수: {{ len .Alerts.Firing }}건 발화 중
+            {{ range .Alerts.Firing }}- 시각: {{ .StartsAt }}
+            {{ end }}
+        disableResolveMessage: false

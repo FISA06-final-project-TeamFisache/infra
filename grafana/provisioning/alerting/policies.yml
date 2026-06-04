@@ -1,0 +1,15 @@
+apiVersion: 1
+
+policies:
+  - orgId: 1
+    receiver: slack-fintech
+    group_by: ['alertname']
+    routes:
+      # 이체 실패 알림은 Slack(slack-fintech)으로 라우팅
+      - receiver: slack-fintech
+        object_matchers:
+          - ['domain', '=', 'transfer']
+        # '건당'에 가깝게: 빠르게 발화하고 발화 유지되는 동안 1분마다 재알림
+        group_wait: 10s
+        group_interval: 1m
+        repeat_interval: 1m
