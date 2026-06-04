@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16     # 일반 postgres 디비
+    image: pgvector/pgvector:pg16     # embedding 컬럼 저장 가능한 postgresql 확장 버전
     container_name: wooriport-db
     ports:
       - "5432:5432"
