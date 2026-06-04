@@ -20,7 +20,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\"}[1m]))",
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\",uri!~\"/actuator.*\"}[1m]))",
           "legendFormat": "RPS"
         }
       ]
@@ -42,12 +42,12 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\",status=~\"5..\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\"}[1m])) * 100",
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\",uri!~\"/actuator.*\",status=~\"5..\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\",uri!~\"/actuator.*\"}[1m])) * 100",
           "legendFormat": "5xx"
         },
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\",status=~\"4..\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\"}[1m])) * 100",
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"wooriport\",uri!~\"/actuator.*\",status=~\"4..\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\",uri!~\"/actuator.*\"}[1m])) * 100",
           "legendFormat": "4xx"
         }
       ]
@@ -67,7 +67,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "prometheus" },
-          "expr": "sum(rate(http_server_requests_seconds_sum{application=\"wooriport\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\"}[1m])) * 1000",
+          "expr": "sum(rate(http_server_requests_seconds_sum{application=\"wooriport\",uri!~\"/actuator.*\"}[1m])) / sum(rate(http_server_requests_seconds_count{application=\"wooriport\",uri!~\"/actuator.*\"}[1m])) * 1000",
           "legendFormat": "avg latency"
         }
       ]
