@@ -1,0 +1,41 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: fintech-transfer
+    folder: 핀테크 알림
+    interval: 1m
+    rules:
+      - uid: transfer-confirm-all-fail
+        title: 이체 실패 발생 (confirm-all)
+        condition: C
+        for: 0m
+        labels:
+          domain: transfer
+          severity: critical
+        annotations:
+          summary: '이체(POST /api/v1/transfer-plans/confirm-all) 실패가 감지되었습니다.'
+          description: '최근 5분간 4xx/5xx 응답이 {{ $values.A.Value }}건 발생했습니다.'
+        # 메트릭이 아직 한 번도 생성 안 됐을 때(호출 전) 오탐 방지
+        noDataState: OK
+        execErrState: Error
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              refId: A
+              instant: true
+              expr: sum(increase(http_server_requests_seconds_count{application="wooriport",uri="/api/v1/transfer-plans/confirm-all",status=~"[45].."}[5m]))
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
