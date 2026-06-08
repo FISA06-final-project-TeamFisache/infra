@@ -26,6 +26,13 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = [aws_security_group.internal.id]
   key_name               = var.key_name != "" ? var.key_name : null
 
+  # 부팅 시 docker/git/compose 설치 + 역할별 레포 clone (컨테이너 기동은 Phase 3)
+  user_data = templatefile("${path.module}/bootstrap.sh.tftpl", {
+    role            = each.key
+    github_org      = var.github_org
+    compose_version = var.compose_version
+  })
+
   root_block_device {
     volume_size = 20 # GB
     volume_type = "gp3"

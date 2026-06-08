@@ -40,6 +40,18 @@ variable "key_name" {
   default     = ""
 }
 
+variable "github_org" {
+  description = "EC2 부트스트랩에서 clone 할 GitHub 조직/사용자 (public 레포)"
+  type        = string
+  default     = "FISA06-final-project-TeamFisache"
+}
+
+variable "compose_version" {
+  description = "설치할 docker compose v2 플러그인 버전"
+  type        = string
+  default     = "v2.29.7"
+}
+
 # EC2 인스턴스 정의. 여기만 고치면 인스턴스가 추가/삭제됨.
 # 전부 private 서브넷에 배치. subnet_index(0/1)로 2개 AZ에 분산.
 variable "instances" {

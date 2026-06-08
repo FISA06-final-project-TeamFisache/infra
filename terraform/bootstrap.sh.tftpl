@@ -1,0 +1,46 @@
+#!/bin/bash
+# EC2 부트스트랩 (Amazon Linux 2023)
+#  - docker / git / docker compose(v2 플러그인) 설치
+#  - 역할(role)에 맞는 레포를 /opt 아래로 clone
+#  - 컨테이너 "기동"은 하지 않음 → Phase 3 에서 RDS엔드포인트/사설IP/시크릿을 주입해 실행.
+#  - private 서브넷이지만 NAT 로 GitHub/Docker Hub 아웃바운드 가능.
+set -euxo pipefail
+
+# ── 공통: 도구 설치 ──────────────────────────────────────────
+dnf update -y
+dnf install -y docker git
+systemctl enable --now docker
+usermod -aG docker ec2-user
+
+# docker compose v2 (플러그인 바이너리 직접 설치 — AL2023 패키지에 없음)
+mkdir -p /usr/local/lib/docker/cli-plugins
+curl -SL "https://github.com/docker/compose/releases/download/${compose_version}/docker-compose-linux-x86_64" \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# ── 역할별 레포 clone (/opt) ────────────────────────────────
+mkdir -p /opt && cd /opt
+ORG="https://github.com/${github_org}"
+
+case "${role}" in
+  app)
+    git clone "$ORG/backend.git"
+    git clone "$ORG/mock-server.git"
+    ;;
+  ai)
+    git clone "$ORG/ai-server.git"
+    ;;
+  kafka)
+    # kafka + redis 는 infra/docker-compose.yml 의 일부 서비스로 띄움
+    git clone "$ORG/infra.git"
+    ;;
+  monitoring)
+    # ELK + prometheus + grafana 도 infra 레포에서
+    git clone "$ORG/infra.git"
+    ;;
+esac
+
+# clone 산출물 소유권을 ec2-user 로
+chown -R ec2-user:ec2-user /opt
+
+echo "bootstrap done: role=${role}" > /opt/BOOTSTRAP_DONE
