@@ -32,7 +32,8 @@ function Invoke-SSM {
 
   Write-Host "[$InstanceId] STATUS: $status"
   Write-Host "----- STDOUT -----"
-  aws ssm get-command-invocation --command-id $cmdId --instance-id $InstanceId --query "StandardOutputContent" --output text
+  # Out-Host 로 출력 → 함수 반환값($status)에 섞이지 않게 (안 그러면 호출부에서 STATUS 오탐)
+  (aws ssm get-command-invocation --command-id $cmdId --instance-id $InstanceId --query "StandardOutputContent" --output text) | Out-Host
   $err = aws ssm get-command-invocation --command-id $cmdId --instance-id $InstanceId --query "StandardErrorContent" --output text
   if ($err) { Write-Host "----- STDERR -----"; Write-Host $err }
   return $status
