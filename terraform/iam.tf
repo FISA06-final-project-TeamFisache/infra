@@ -27,3 +27,26 @@ resource "aws_iam_instance_profile" "ssm" {
   name = "${var.project}-ssm-profile"
   role = aws_iam_role.ssm.name
 }
+
+#############################################
+# 프론트 배포용: EC2(app)에서 S3 업로드 + CloudFront 무효화 허용.
+#  (로컬에 node가 없어 EC2에서 빌드/업로드하기 위함. 프론트 버킷/배포로 범위 제한)
+#############################################
+data "aws_iam_policy_document" "frontend_deploy" {
+  statement {
+    sid       = "S3Frontend"
+    actions   = ["s3:ListBucket", "s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = [aws_s3_bucket.frontend.arn, "${aws_s3_bucket.frontend.arn}/*"]
+  }
+  statement {
+    sid       = "CloudFrontInvalidate"
+    actions   = ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"]
+    resources = [aws_cloudfront_distribution.main.arn]
+  }
+}
+
+resource "aws_iam_role_policy" "frontend_deploy" {
+  name   = "${var.project}-frontend-deploy"
+  role   = aws_iam_role.ssm.id
+  policy = data.aws_iam_policy_document.frontend_deploy.json
+}
