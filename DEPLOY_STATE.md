@@ -58,14 +58,52 @@ RDS 비번: `terraform output -raw rds_password`
 
 ## 3. 접속 방법
 
-### 앱 (브라우저 바로)
+### 3.0 ⭐ `aws ssm` 명령은 어디서 / 어떻게 실행하나 (사전 준비)
+
+**실행 위치**: 내 **로컬 PC의 PowerShell 창** (EC2 안이 아님!). AWS 자격증명이 있는 곳이면 어디서든 OK.
+EC2는 공인 IP가 없어 SSH 불가 → 전부 로컬에서 SSM으로 접속한다.
+
+**사전 준비 3가지** (한 번만):
+
+1. **AWS CLI 설치 + 자격증명** — 이미 돼 있음(이 프로젝트는 `infra/terraform/.venv`에 awscli 설치).
+   - 새 PowerShell 창마다 PATH 한 줄 실행(포터블 설치라):
+     ```powershell
+     cd c:\itstudy\infra\terraform
+     $env:PATH = "$PWD;$PWD\.venv\Scripts;$env:PATH"
+     ```
+   - 확인: `aws sts get-caller-identity` → 계정 ID 나오면 OK.
+   - (winget 등으로 aws를 **전역 설치**했다면 PATH 줄 불필요, 아무 창에서나 됨)
+
+2. **Session Manager plugin 설치** — ⚠️ **start-session / 포트포워딩에 필수**. 없으면
+   `SessionManagerPlugin is not found` 에러. (terraform apply/verify에는 불필요해서 안 깔려 있을 수 있음)
+   - 설치(택1):
+     ```powershell
+     winget install Amazon.SessionManagerPlugin
+     ```
+     또는 수동: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
+   - 설치 후 **새 창**에서 확인: `session-manager-plugin` (버전/사용법 나오면 OK)
+
+3. **리전** — `aws configure`에서 `ap-northeast-2`로 돼 있으면 그대로. 아니면 각 명령에 `--region ap-northeast-2` 추가.
+
+**포트포워딩 사용 팁**:
+- 포워딩 명령을 실행한 **그 창은 터널이 유지되는 동안 계속 점유**된다(닫으면 끊김).
+  → 그 창은 그대로 두고, **브라우저/다른 작업은 별도 창**에서 한다.
+- "Waiting for connections..." 가 뜨면 성공 → 브라우저에서 `http://localhost:<localPortNumber>` 접속.
+- 끊을 땐 그 창에서 `Ctrl + C`.
+
+> 요약: **로컬 PowerShell → (PATH 한 줄) → aws sts get-caller-identity 로 확인 → start-session**. 막히면 십중팔구 Session Manager plugin 미설치.
+
+### 앱 (브라우저 바로 — SSM 불필요)
 https://dumjmuqwuhqbz.cloudfront.net
 
-### EC2 셸 (SSM)
+### EC2 셸 접속 (SSM)
 ```powershell
-aws ssm start-session --target <instance-id>   # Session Manager plugin 필요
-# 비대화형 명령 실행은 ssm-run.ps1 헬퍼 사용 (아래 4절)
+# 로컬 PowerShell에서 (3.0 사전준비 완료 가정)
+aws ssm start-session --target i-003545fe3811e01d1     # app
+# 접속되면 그 안에서: sudo su - ec2-user  (docker 명령용)
+# 종료: exit
 ```
+> 비대화형으로 명령만 돌릴 땐 셸 접속 대신 `ssm-run.ps1` 헬퍼 사용 (4절).
 
 ### 모니터링 (private → SSM 포트포워딩, monitoring EC2 = i-00993a730a448bbfe)
 ```powershell
