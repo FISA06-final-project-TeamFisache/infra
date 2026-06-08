@@ -142,6 +142,19 @@ Invoke-SSM -InstanceId i-xxxx -Script "docker ps"
 
 ## 5. 서비스별 주입 설정 (재배포 시 그대로)
 
+> ⭐ **자동화됨**: `apply` 후 아래 한 줄이면 ②kafka~⑦frontend 전부 배포된다. 식별자(IP/RDS/CloudFront/버킷)는
+> `terraform output`에서 자동으로 읽으므로 **손댈 값 없음**. 시크릿도 자동(아래 출처).
+> ```powershell
+> cd c:\itstudy\infra\terraform
+> .\redeploy.ps1            # 실제 배포 (~15~20분)
+> .\redeploy.ps1 -DryRun    # 값 주입만 검증(SSM 미실행)
+> ```
+> 구성: `redeploy.ps1`(오케스트레이터) + `deploy\*.sh`(단계별 템플릿, 플레이스홀더).
+> 시크릿 출처: RDS비번=`terraform output` / OpenAI·Tavily·LLM_MODEL=로컬 `ai-server/.env` / JWT=로컬 `backend/.../application-secret.yml`(컨테이너에 마운트).
+> ⚠️ 그래서 **로컬에 `ai-server/.env`와 `backend/src/main/resources/application-secret.yml`이 있어야** 한다(둘 다 gitignore).
+>
+> 아래는 redeploy.ps1이 내부적으로 하는 일(수동/디버그 참고용):
+
 > 사설IP/엔드포인트/CloudFront URL은 1절 값. RDS 비번은 `terraform output -raw rds_password`.
 
 ### backend (app EC2) — `/opt/backend.env` (env-file) + secret 파일 마운트
@@ -242,8 +255,10 @@ terraform destroy     # 전부 삭제, 과금 0
 
 ## 9. 재개 빠른 절차 (다음 세션)
 
-1. `terraform output`으로 현재 살아있는지 + 값 확인 (없으면 `terraform apply`로 재생성, ~15분)
-2. 재apply했다면 새 IP/엔드포인트로 5절 env 갱신해서 ②kafka→③monitoring→④ai→⑤backend→⑥frontend 재배포
-3. 검증: `https://<cloudfront>` + `/actuator/health` 200 확인
+1. `terraform apply` (인프라 재생성, ~15분) — destroy된 상태라면
+2. `.\redeploy.ps1` (앱 ②~⑦ 자동 배포, ~15~20분) — **식별자/시크릿 자동, 손댈 값 없음**
+3. 검증: `https://<cloudfront_url>` + `/actuator/health` 200  (URL은 `terraform output cloudfront_url`)
 4. (선택) mock-server + 카드 시드로 알림 E2E
 5. 끝나면 `terraform destroy`
+
+> 즉 다음 세션은 **`terraform apply` → `.\redeploy.ps1`** 두 줄이면 지금 상태로 복귀(데이터 제외).
