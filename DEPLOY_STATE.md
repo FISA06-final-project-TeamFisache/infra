@@ -1,8 +1,13 @@
 # 배포 현황 / 인수인계 (AWS 연결 테스트)
 
-> 마지막 작업: **2026-06-08**. 전체 스택을 AWS에 올리고 핵심 연결까지 검증 완료.
-> 다음 세션은 이 문서 + [DEPLOY.md](DEPLOY.md)(런북)를 참고하면 바로 이어서 작업 가능.
-> ⚠️ **시크릿(비번/키)은 이 문서에 없음** — `terraform output` / 각 레포의 `.env`에서 가져올 것.
+> **현재 상태(2026-06-08): 🔴 DESTROYED — 모든 리소스 삭제됨, 과금 $0.**
+> 한 번 전체 배포·검증을 마치고 `terraform destroy`로 내린 상태. AWS에 떠있는 것 없음.
+>
+> 이번 세션에 한 일: 전체 스택 AWS 배포 → E2E 연결 검증 → **앱 기동 자동화(`redeploy.ps1`) 작성+실전 검증** → destroy.
+> **다음 세션 복귀 = 두 줄**: `terraform apply` → `.\redeploy.ps1` (자세히는 9절).
+> ⚠️ 아래 1절의 ID/IP/엔드포인트는 **지난 apply 때 값이라 지금은 전부 무효** — 재apply하면 새 값 생김(`terraform output`).
+> ⚠️ **시크릿(비번/키)은 이 문서에 없음** — `terraform output` / 각 레포의 `.env`에서 가져옴(자동화가 알아서 읽음).
+> 📌 미push 커밋: infra `b4ef20d`(헬퍼 오탐 수정) — 다음에 push 필요.
 
 ---
 
@@ -14,9 +19,10 @@
 
 ---
 
-## 1. 현재 떠 있는 리소스 (이번 apply 기준)
+## 1. 리소스 식별자 (지난 apply 기준 — 현재는 destroy됨, 참고용)
 
-> ⚠️ 아래 ID/IP/엔드포인트는 **이번 apply에서 생성된 값**. 재apply하면 바뀌므로 항상 `terraform output`으로 최신화.
+> ⚠️ **지금은 전부 삭제된 상태.** 아래는 "이런 항목들이 생긴다"는 참고. 재apply하면 **새 값**이 생기니
+> 항상 `terraform output`으로 확인(자동화 스크립트가 알아서 읽음).
 
 ```powershell
 cd c:\itstudy\infra\terraform
@@ -41,7 +47,10 @@ RDS 비번: `terraform output -raw rds_password`
 
 ---
 
-## 2. 서비스 배포 상태
+## 2. 서비스 배포 상태 (destroy 전 마지막 시점 — `redeploy.ps1`로 재현됨)
+
+> 아래는 한창 떠있을 때 상태. **`redeploy.ps1` 한 번으로 이 상태 전체가 재현됨을 실전 검증 완료**
+> (5단계 모두 STATUS=Success, 외부 `GET /`=200, `/actuator/health`=200 UP). 지금은 destroy로 내려감.
 
 | EC2 | 올린 것 | 상태 | 비고 |
 |---|---|---|---|
@@ -226,6 +235,8 @@ docker compose up -d prometheus grafana elasticsearch logstash kibana
 | kafka 컨슈머 `NOT_COORDINATOR` 반복 | 기동 직후 `__consumer_offsets` 준비중 | 수초 후 자동 해소(정상) |
 | prometheus 타깃 안 잡힘 | `host.docker.internal` (크로스호스트 불가) | 사설IP로 sed |
 | SSM 헬퍼 큰 출력에서 깨짐 | ConvertFrom-Json + cp949 인코딩 | `--query`로 status만 폴링 + `PYTHONIOENCODING=utf-8` |
+| redeploy STATUS 오탐 `[!!]` | 헬퍼 반환값에 출력 섞임 | StandardOutputContent를 `Out-Host`로 (`b4ef20d`) |
+| destroy 실패 `BucketNotEmpty` | S3에 프론트 파일 남아 버킷 삭제 불가 | `aws s3 rm --recursive` 후 재destroy + 버킷에 `force_destroy=true` 추가 |
 
 **서비스별 env 변수명 차이 주의**: mock-server는 `KAFKA_BOOTSTRAP`(≠`_SERVERS`), `DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD`. 상세는 [DEPLOY.md](DEPLOY.md) 부록.
 

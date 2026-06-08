@@ -12,8 +12,9 @@ resource "random_id" "frontend_bucket" {
 }
 
 resource "aws_s3_bucket" "frontend" {
-  bucket = "${var.project}-frontend-${random_id.frontend_bucket.hex}"
-  tags   = { Name = "${var.project}-frontend" }
+  bucket        = "${var.project}-frontend-${random_id.frontend_bucket.hex}"
+  force_destroy = true # destroy 시 객체 남아있어도 버킷 삭제(프론트 정적이라 안전)
+  tags          = { Name = "${var.project}-frontend" }
 }
 
 # 전체 비공개 (CloudFront OAC 로만 접근)
