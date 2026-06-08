@@ -1,0 +1,4 @@
+# 셸 스크립트/템플릿은 EC2(Linux)에서 실행되므로 LF 강제.
+# (Windows 체크아웃 시 CRLF 로 바뀌면 user_data 의 #!/bin/bash 가 깨짐)
+*.sh    text eol=lf
+*.tftpl text eol=lf
