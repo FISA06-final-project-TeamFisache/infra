@@ -64,3 +64,26 @@ output "rds_jdbc_url" {
   description = "Spring 등에서 쓸 JDBC URL (비밀번호는 별도)"
   value       = var.enable_rds ? "jdbc:postgresql://${aws_db_instance.main[0].address}:${aws_db_instance.main[0].port}/${aws_db_instance.main[0].db_name}" : null
 }
+
+#############################################
+# Web tier (ALB + S3 + CloudFront)
+#############################################
+output "cloudfront_url" {
+  description = "브라우저 접속 주소 (프론트 + API 단일 진입점, HTTPS)"
+  value       = "https://${aws_cloudfront_distribution.main.domain_name}"
+}
+
+output "alb_dns_name" {
+  description = "ALB 직접 주소 (디버깅용 HTTP). 평상시엔 CloudFront 로 접속."
+  value       = aws_lb.main.dns_name
+}
+
+output "frontend_bucket" {
+  description = "프론트 정적 업로드 대상 S3 버킷 (Phase 3: aws s3 sync)"
+  value       = aws_s3_bucket.frontend.bucket
+}
+
+output "cloudfront_distribution_id" {
+  description = "배포 후 캐시 무효화에 사용 (aws cloudfront create-invalidation)"
+  value       = aws_cloudfront_distribution.main.id
+}
