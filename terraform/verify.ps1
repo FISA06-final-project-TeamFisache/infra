@@ -72,9 +72,9 @@ if (-not $tf.instance_ids) { Fail "instance_ids 출력 없음 — apply 확인";
 
 $instances = [ordered]@{}
 foreach ($p in $tf.instance_ids.value.PSObject.Properties) { $instances[$p.Name] = $p.Value }
-# 배치는 enable_batch=true 일 때만
-if ($tf.PSObject.Properties.Name -contains 'batch_instance_id' -and $tf.batch_instance_id.value) {
-  $instances['batch'] = $tf.batch_instance_id.value
+# Jenkins 는 enable_jenkins=true 일 때만
+if ($tf.PSObject.Properties.Name -contains 'jenkins_instance_id' -and $tf.jenkins_instance_id.value) {
+  $instances['jenkins'] = $tf.jenkins_instance_id.value
 }
 
 $privIps = @{}

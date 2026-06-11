@@ -15,7 +15,6 @@ project = "myapp"
 # rds_username            = "appuser"
 # 비밀번호는 자동 생성됨 → 확인: terraform output -raw rds_password
 
-# --- Spring Batch (추후 예정 / 분리 시 켜기) ---
-# enable_batch     = true
-# batch_start_cron = "cron(50 1 * * ? *)"  # 매일 01:50 KST 시작
-# batch_stop_cron  = "cron(0 3 * * ? *)"   # 매일 03:00 KST 중지
+# --- Jenkins (CI/CD) ---
+# enable_jenkins        = true         # 기본 on. 끄려면 false (Jenkins EC2/IAM만 삭제)
+# jenkins_instance_type = "t3.medium"  # 빌드까지 하면 4GB가 최소선

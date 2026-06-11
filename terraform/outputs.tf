@@ -29,9 +29,14 @@ output "ssm_connect_commands" {
   value       = { for k, i in aws_instance.this : k => "aws ssm start-session --target ${i.id}" }
 }
 
-output "batch_instance_id" {
-  description = "배치 EC2 ID (enable_batch=true 일 때만)"
-  value       = var.enable_batch ? aws_instance.batch[0].id : null
+output "jenkins_instance_id" {
+  description = "Jenkins EC2 ID (enable_jenkins=true 일 때만)"
+  value       = var.enable_jenkins ? aws_instance.jenkins[0].id : null
+}
+
+output "jenkins_port_forward" {
+  description = "로컬에서 Jenkins UI 열기 → 실행 후 http://localhost:8081 (Session Manager plugin 필요)"
+  value       = var.enable_jenkins ? "aws ssm start-session --target ${aws_instance.jenkins[0].id} --document-name AWS-StartPortForwardingSession --parameters '{\"portNumber\":[\"8080\"],\"localPortNumber\":[\"8081\"]}'" : null
 }
 
 #############################################

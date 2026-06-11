@@ -77,8 +77,8 @@ variable "instances" {
       instance_type = "t3.medium" # Grafana+Prometheus+ELK (4GB로 시작, 빠듯하면 t3.large)
       subnet_index  = 1
     }
-    # Spring Batch는 start/stop 스케줄이 필요해 batch.tf에서 별도 관리.
-    # enable_batch = true 로 켬.
+    # Jenkins 는 전용 IAM(배포 권한)이 필요해 jenkins.tf 에서 별도 관리.
+    # Spring Batch 는 분리하지 않음 — app(Spring Boot) 안에서 스케줄링으로 실행.
   }
 }
 
@@ -152,40 +152,22 @@ variable "rds_skip_final_snapshot" {
 }
 
 #############################################
-# Spring Batch (EC2 start/stop + EventBridge Scheduler) — 추후 예정
+# Jenkins (CI/CD EC2)
 #############################################
-variable "enable_batch" {
-  description = "배치 EC2 + 스케줄러 생성 여부 (분리 시 true)"
+variable "enable_jenkins" {
+  description = "Jenkins EC2 생성 여부 (비용 제어용 on/off 스위치). 기본 on"
   type        = bool
-  default     = false
+  default     = true
 }
 
-variable "batch_instance_type" {
-  description = "배치 EC2 타입"
+variable "jenkins_instance_type" {
+  description = "Jenkins EC2 타입 (Jenkins + docker 빌드 감당 최소선이 t3.medium/4GB)"
   type        = string
-  default     = "t3.small"
+  default     = "t3.medium"
 }
 
-variable "batch_subnet_index" {
-  description = "배치 EC2를 둘 private 서브넷 (0=AZ-a, 1=AZ-c)"
+variable "jenkins_subnet_index" {
+  description = "Jenkins EC2를 둘 private 서브넷 (0=AZ-a, 1=AZ-c)"
   type        = number
   default     = 0
-}
-
-variable "schedule_timezone" {
-  description = "스케줄 시간대"
-  type        = string
-  default     = "Asia/Seoul"
-}
-
-variable "batch_start_cron" {
-  description = "배치 EC2 시작 시각 (cron). 기본: 매일 01:50 KST"
-  type        = string
-  default     = "cron(50 1 * * ? *)"
-}
-
-variable "batch_stop_cron" {
-  description = "배치 EC2 중지 시각 (cron). 기본: 매일 03:00 KST"
-  type        = string
-  default     = "cron(0 3 * * ? *)"
 }

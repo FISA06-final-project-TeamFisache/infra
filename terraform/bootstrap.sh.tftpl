@@ -38,6 +38,17 @@ case "${role}" in
     # ELK + prometheus + grafana 도 infra 레포에서
     git clone "$ORG/infra.git"
     ;;
+  jenkins)
+    # CI/CD 서버: Jenkins 네이티브 설치 (java 21 + 공식 yum repo)
+    # 빌드용 docker 는 위 공통부에서 설치됨 → jenkins 유저에 docker 권한 부여
+    dnf install -y java-21-amazon-corretto
+    curl -fsSL https://pkg.jenkins.io/redhat-stable/jenkins.repo -o /etc/yum.repos.d/jenkins.repo
+    rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    dnf install -y jenkins
+    usermod -aG docker jenkins
+    systemctl enable --now jenkins
+    # 초기 관리자 비밀번호: /var/lib/jenkins/secrets/initialAdminPassword
+    ;;
 esac
 
 # clone 산출물 소유권을 ec2-user 로
