@@ -93,17 +93,59 @@
       ]
     },
     {
+      "id": 5,
+      "title": "FastAPI 응답 시간 P95 (엔드포인트별)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (handler, le) (rate(http_request_duration_seconds_bucket{job=\"fastapi\", handler!~\"/metrics|/health\"}[5m])))",
+          "legendFormat": "{{handler}}"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "FastAPI 에러율 (4xx · 5xx)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "color": { "mode": "palette-classic" }, "min": 0, "max": 1 },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_requests_total{job=\"fastapi\", status=~\"[45]..\"}[5m])) / sum(rate(http_requests_total{job=\"fastapi\"}[5m]))",
+          "legendFormat": "4xx+5xx rate"
+        }
+      ]
+    },
+    {
       "id": 10,
       "title": "💸 핀테크 - 이체 (confirm-all)",
       "type": "row",
-      "gridPos": { "x": 0, "y": 18, "w": 24, "h": 1 }
+      "gridPos": { "x": 0, "y": 26, "w": 24, "h": 1 }
     },
     {
       "id": 11,
       "title": "이체 성공률 (%)",
       "type": "gauge",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "x": 0, "y": 19, "w": 8, "h": 8 },
+      "gridPos": { "x": 0, "y": 27, "w": 8, "h": 8 },
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
@@ -132,7 +174,7 @@
       "title": "이체 실패 건수 (최근 1시간)",
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "x": 8, "y": 19, "w": 8, "h": 8 },
+      "gridPos": { "x": 8, "y": 27, "w": 8, "h": 8 },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
@@ -164,7 +206,7 @@
       "title": "이체 성공/실패 추이 (5m)",
       "type": "timeseries",
       "datasource": { "type": "prometheus", "uid": "prometheus" },
-      "gridPos": { "x": 16, "y": 19, "w": 8, "h": 8 },
+      "gridPos": { "x": 16, "y": 27, "w": 8, "h": 8 },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
